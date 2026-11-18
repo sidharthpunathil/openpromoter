@@ -47,12 +47,19 @@ Set these on the `app` service in Railway. `.env.example` lists every option.
 | `PORT` | `3000` |
 | `DATABASE_POOL_MAX` | `10` |
 | `RATE_LIMIT_STORE` | `postgres` |
+| `TRUSTED_IP_HEADER` | `cf-connecting-ip` (the visitor's IP from Cloudflare) |
+| `PEER_IP_HEADER` | `x-real-ip` (Railway overwrites it with the connecting address) |
+| `WORKSPACE_CREATORS` | `sidharth@cofount.com` (only this account can start a workspace) |
 
 Write `APP_URL` as a plain URL. A `${{RAILWAY_PUBLIC_DOMAIN}}` reference switches to a new custom domain as soon as it is added, before its DNS works. Sign-in follows `APP_URL`, so a domain that isn't live yet locks everyone out.
 
 Never change `ENCRYPTION_KEY` after setup. It encrypts the saved provider secrets, which can't be read with a new key. A new `BETTER_AUTH_SECRET` signs everyone out.
 
 Generate a secret with `openssl rand -hex 32`.
+
+The Railway domain can be reached without going through Cloudflare, so anyone can send a fake `cf-connecting-ip` there. With `PEER_IP_HEADER` set, the app only believes `cf-connecting-ip` when the request came from a Cloudflare address. Otherwise it uses the address Railway saw. Rate limits and fraud checks then see the real visitor either way.
+
+Outgoing webhooks only go to public addresses. Set `ALLOW_PRIVATE_WEBHOOKS=true` if one of yours must reach a private address.
 
 ## Custom domain
 

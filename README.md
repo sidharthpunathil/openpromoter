@@ -11,7 +11,7 @@
 
 ### Open-source affiliate and referral program software for SaaS
 
-A self-hosted alternative to Rewardful, FirstPromoter and Tolt. Track referrals from Stripe, stop affiliate fraud and pay partners with 0% payout fees.
+A self-hosted alternative to [Rewardful](https://openpromoter.com/alternatives/rewardful/), [FirstPromoter](https://openpromoter.com/alternatives/firstpromoter/) and [Tolt](https://openpromoter.com/alternatives/tolt/). Track referrals from Stripe, stop affiliate fraud and pay partners with 0% payout fees.
 
 [Website](https://openpromoter.com) · [Watch the film (1:20)](https://www.youtube.com/watch?v=PUepd2ts-mM) · [Live demo](https://openpromoter.com/demo/) · [Docs](https://openpromoter.com/docs/) · [Self-hosting](https://openpromoter.com/docs/self-hosting/) · [API](https://openpromoter.com/docs/api/) · [Discussions](https://github.com/openpromoter/openpromoter/discussions)
 
@@ -81,8 +81,9 @@ Open http://localhost:3000 and sign in to the demo workspace with `demo@openprom
 ### Deploy to a server
 
 <a href="https://render.com/deploy?repo=https://github.com/openpromoter/openpromoter"><img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" height="40"></a>
+<a href="https://railway.com/deploy/openpromoter"><img src="https://railway.com/button.svg" alt="Deploy on Railway" height="40"></a>
 
-Render reads [render.yaml](render.yaml) and creates the app and its Postgres database. On Railway, Fly.io or your own VPS, run the [Dockerfile](Dockerfile) with Postgres 16 and set these variables:
+Render reads [render.yaml](render.yaml) and creates the app and its Postgres database. The Railway button deploys the app with Postgres from a template. On Fly.io or your own VPS, run the [Dockerfile](Dockerfile) with Postgres 16 and set these variables:
 
 | Variable | What it is |
 |---|---|
@@ -220,6 +221,7 @@ Commissions are calculated on the amount before tax. A full refund reverses the 
 - **TypeScript SDK:** `npm install openpromoter`. See [packages/sdk](packages/sdk).
 - **CLI:** `npx openpromoter-cli`. Its `listen` command forwards events to localhost. See [packages/cli](packages/cli).
 - **MCP server** for any MCP client: Claude Desktop, Claude Code, Codex, Cursor, VS Code with GitHub Copilot, Windsurf, Gemini CLI and Zed. It is read-only by default and no tool can send money. See [packages/mcp](packages/mcp).
+- **Remote MCP server** at `/mcp` on your OpenPromoter URL (`https://app.openpromoter.com/mcp` on Cloud). Claude, ChatGPT and other apps connect with a sign-in. OpenPromoter is listed in [Claude's connector directory](https://claude.ai/directory/openpromoter). You pick the workspace and whether the app can make changes.
 - **Agent skill:** `npx -y openpromoter-cli skill` installs an "add an affiliate program" skill for Claude Code, Codex and Cursor. Any other coding agent works with the [one-prompt install](https://openpromoter.com/docs/agent-skill/).
 
 ```json

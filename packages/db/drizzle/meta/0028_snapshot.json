@@ -1,5 +1,5 @@
 {
-  "id": "2c565323-e0df-40f2-99f1-cda777843200",
+  "id": "99b3714a-5ba1-4025-ac31-68b4ad755b81",
   "prevId": "ff18e18f-fa7d-4bc1-8b9c-469bc3ce5cb6",
   "version": "7",
   "dialect": "postgresql",
@@ -3947,13 +3947,6 @@
           "notNull": true,
           "default": "'[]'::jsonb"
         },
-        "page_plans": {
-          "name": "page_plans",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'::jsonb"
-        },
         "cookie_days": {
           "name": "cookie_days",
           "type": "integer",
@@ -4060,6 +4053,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": 70
+        },
+        "hold_browser_leads": {
+          "name": "hold_browser_leads",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "terms": {
           "name": "terms",

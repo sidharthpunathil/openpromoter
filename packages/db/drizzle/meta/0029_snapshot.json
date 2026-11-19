@@ -1,6 +1,6 @@
 {
-  "id": "da669300-bbb8-4775-af19-336974f78abd",
-  "prevId": "2c565323-e0df-40f2-99f1-cda777843200",
+  "id": "b34e7ecd-7fa5-4b4e-821d-b604ac6ae68e",
+  "prevId": "99b3714a-5ba1-4025-ac31-68b4ad755b81",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -4060,6 +4060,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": 70
+        },
+        "hold_browser_leads": {
+          "name": "hold_browser_leads",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "terms": {
           "name": "terms",

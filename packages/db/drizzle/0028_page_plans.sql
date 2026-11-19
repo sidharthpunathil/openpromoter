@@ -1,0 +1,1 @@
+ALTER TABLE "program" ADD COLUMN "page_plans" jsonb DEFAULT '[]'::jsonb NOT NULL;

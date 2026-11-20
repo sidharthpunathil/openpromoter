@@ -1,4 +1,6 @@
+import { hmacHex, safeEqual } from "@/lib/crypto";
 import { env } from "@/server/env";
+import { safeFetch } from "@/server/safe-fetch";
 
 /**
  * Cloudflare for SaaS custom hostnames: Cloudflare issues and renews the TLS certificate for each
@@ -9,6 +11,29 @@ export const cloudflareOn = () => !!(env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_
 
 /** What founders point their CNAME at. */
 export const cnameTarget = () => env.CUSTOM_DOMAIN_TARGET || new URL(env.APP_URL).hostname;
+
+/** Path that answers with domainProof() for the host it was reached on. */
+export const DOMAIN_PROOF_PATH = "/api/domain-proof";
+
+/** What this install answers at DOMAIN_PROOF_PATH on `host`. Another install, with another secret, answers differently. */
+export const domainProof = (host: string) =>
+  hmacHex(
+    process.env.BETTER_AUTH_SECRET || process.env.ENCRYPTION_KEY || "op",
+    `domain-proof:${host.toLowerCase()}`,
+  );
+
+/**
+ * True when https://<host> is served by this install. Hosts like Railway give each custom domain its own CNAME
+ * target, so the CNAME can't be compared with cnameTarget(); what matters is that the domain reaches this app.
+ */
+export async function reachesThisApp(host: string): Promise<boolean> {
+  const res = await safeFetch(`https://${host}${DOMAIN_PROOF_PATH}`, {
+    maxRedirects: 0,
+    maxBytes: 1000,
+    timeoutMs: 8000,
+  }).catch(() => null);
+  return !!res && res.status === 200 && safeEqual(res.text.trim(), domainProof(host));
+}
 
 type Hostname = { id: string; hostname: string; status: string; ssl?: { status?: string } };
 

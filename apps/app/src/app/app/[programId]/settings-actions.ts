@@ -39,6 +39,7 @@ import {
   cloudflareOn,
   cnameTarget,
   hostnameProblem,
+  reachesThisApp,
   removeHostname,
 } from "@/server/custom-hostnames";
 import { db } from "@/server/db";
@@ -547,8 +548,12 @@ export async function verifyDomainAction(programId: string) {
     } else {
       const target = cnameTarget();
       const records = await resolveCname(d).catch(() => [] as string[]);
-      if (!records.some((r) => r.replace(/\.$/, "") === target))
-        throw new Error(`No CNAME to ${target} found for ${d} yet. DNS can take a few minutes.`);
+      // a CNAME straight to us, or (Railway and similar hosts, where each domain gets its own target) the
+      // domain already serving this app over HTTPS
+      if (!records.some((r) => r.replace(/\.$/, "") === target) && !(await reachesThisApp(d)))
+        throw new Error(
+          `${d} doesn't reach this app yet. Add a CNAME to ${target}, or the record your host gives you, and wait for HTTPS to work. DNS can take a few minutes.`,
+        );
     }
     await db().update(program).set({ customDomainVerifiedAt: new Date() }).where(eq(program.id, programId));
     rv(programId);

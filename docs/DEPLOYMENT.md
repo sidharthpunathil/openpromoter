@@ -63,29 +63,42 @@ Outgoing webhooks only go to public addresses. Set `ALLOW_PRIVATE_WEBHOOKS=true`
 
 ## Custom domain
 
-The domain is added on the `app` service with target port 3000. Railway shows two records to add in Cloudflare:
+`affiliate.aiworkmagic.co` is the only custom domain on the `app` service (target port 3000). Its records in Cloudflare:
 
 | Type | Name | Content | Proxy |
 |---|---|---|---|
-| CNAME | `affiliate` | `ugxrqi4d.up.railway.app` | DNS only |
+| CNAME | `affiliate` | `qvuxla2z.up.railway.app` | Proxied |
 | TXT | `_railway-verify.affiliate` | The `railway-verify=...` value from Railway | DNS only |
 
-Keep the CNAME on DNS only (grey cloud) so Railway can issue the certificate. To use the Cloudflare proxy later, set SSL/TLS to Full first.
+Railway hands out a new CNAME target whenever the domain is added again, so update the CNAME to match. Keep SSL/TLS on Full while the record is proxied.
 
-Once `https://affiliate.aiworkmagic.co/api/health` returns 200, set `APP_URL=https://affiliate.aiworkmagic.co`. Then update every URL that points at the old one: the Dodo webhook, and the Google and GitHub sign-in callbacks if you use them.
+`APP_URL` is `https://affiliate.aiworkmagic.co`. If it changes, update every URL that points at the old one: the Dodo webhook, and the Google and GitHub sign-in callbacks if you use them.
 
 Check the domain with `railway domain` or `dig affiliate.aiworkmagic.co`.
 
-### A program on its own domain
+## Products
 
-A program can have its own domain, such as `affiliate.valentineweek.xyz`, served by the same `app` service and database. Leave `APP_URL` as it is.
+aiworkmagic.co is a studio of small products, and this OpenPromoter runs the affiliate program for each of them. Every product is a program in its own workspace, at `https://affiliate.aiworkmagic.co/p/<slug>`. Programs have no custom domain set in the app, so every link the app builds uses `affiliate.aiworkmagic.co`.
 
-1. In the program, open Settings > Branding and save the domain.
-2. Add the same domain to the `app` service in Railway, with target port 3000.
-3. Add the CNAME and `_railway-verify` TXT records Railway shows at that domain's DNS provider. Keep the CNAME on DNS only.
-4. When `https://<domain>/api/health` returns 200, click Verify in the program settings.
+A product's own subdomain is a Cloudflare redirect. Railway's plan caps custom domains per service, and redirects have no cap. Your Love Wrapped works this way: `creators.yourlovewrapped.com` is a proxied `AAAA` record to `100::` plus four Single Redirect rules in the `yourlovewrapped.com` zone, checked in this order:
 
-Railway gives each domain its own CNAME target, so Verify doesn't compare the CNAME. It requests `https://<domain>/api/domain-proof` and checks that this app answered. Each domain counts toward Railway's custom domain limit for the `app` service.
+| Path on the product subdomain | Redirects to `https://affiliate.aiworkmagic.co` |
+|---|---|
+| `/` | `/p/your-love-wrapped` (302) |
+| `/apply...`, `/portal...` | `/p/your-love-wrapped` + the path (302) |
+| App paths: `/login`, `/signup`, `/forgot`, `/reset`, `/api/`, `/_next/`, `/app`, `/admin`, `/invite`, `/oauth`, `/mcp`, `/network`, `/partners`, `/embed`, `/onboarding`, `/demo`, `/p/`, `/r/`, `/op.js` | the same path (307) |
+| Anything else, such as a partner short link | `/r/your-love-wrapped/l` + the path (302) |
+
+Query strings carry over, so `?via=` survives the redirect.
+
+To add a product:
+
+1. Create its program in the app, in a new workspace, and note the slug.
+2. In the product's Cloudflare zone, add a proxied `AAAA` record for the subdomain pointing to `100::`, and copy the four rules with the new host and slug. Add them to the zone's existing redirect rules; replacing the ruleset would drop rules already there.
+3. Connect billing for the workspace. Products that share one Dodo business each need their own webhook endpoint, `https://affiliate.aiworkmagic.co/api/webhooks/dodo/<workspaceId>`.
+4. On the product's site, set `NEXT_PUBLIC_OPENPROMOTER_URL=https://affiliate.aiworkmagic.co` and `NEXT_PUBLIC_OPENPROMOTER_PROGRAM=<slug>` to load op.js, and pass the click id as `op_click` in checkout metadata.
+
+A program can still have its own custom domain on Railway, which keeps the product's name in the address bar, but each one takes one of the service's few domain slots. For those, Verify requests `https://<domain>/api/domain-proof` instead of comparing the CNAME, since Railway gives each domain its own target.
 
 ## Email (Resend)
 

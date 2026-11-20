@@ -122,3 +122,37 @@ describe("custom hostnames (Cloudflare for SaaS)", () => {
     expect(err).not.toContain("cf-test-token");
   });
 });
+
+describe("domain reach check (no Cloudflare)", () => {
+  it("passes when the domain answers with this install's proof", async () => {
+    const { domainProof, reachesThisApp } = await import("@/server/custom-hostnames");
+    const safe = await import("@/server/safe-fetch");
+    const spy = vi.spyOn(safe, "safeFetch");
+    spy.mockResolvedValueOnce({
+      status: 200,
+      url: "",
+      headers: {},
+      text: `${domainProof("aff.acme.test")}\n`,
+    });
+    expect(await reachesThisApp("aff.acme.test")).toBe(true);
+    expect(spy.mock.calls[0]![0]).toBe("https://aff.acme.test/api/domain-proof");
+    // another app, or a proof minted for a different host, doesn't count
+    spy.mockResolvedValueOnce({ status: 200, url: "", headers: {}, text: domainProof("other.acme.test") });
+    expect(await reachesThisApp("aff.acme.test")).toBe(false);
+    spy.mockResolvedValueOnce({ status: 404, url: "", headers: {}, text: domainProof("aff.acme.test") });
+    expect(await reachesThisApp("aff.acme.test")).toBe(false);
+    spy.mockRejectedValueOnce(new Error("ENOTFOUND"));
+    expect(await reachesThisApp("aff.acme.test")).toBe(false);
+    spy.mockRestore();
+  });
+
+  it("serves the proof for the host it was reached on", async () => {
+    const { domainProof } = await import("@/server/custom-hostnames");
+    const { GET } = await import("@/app/api/domain-proof/route");
+    const res = await GET(
+      new Request("http://x/api/domain-proof", { headers: { host: "Aff.Acme.test:443" } }),
+    );
+    expect(await res.text()).toBe(domainProof("aff.acme.test"));
+    expect(res.headers.get("cache-control")).toBe("no-store");
+  });
+});

@@ -76,6 +76,17 @@ Once `https://affiliate.aiworkmagic.co/api/health` returns 200, set `APP_URL=htt
 
 Check the domain with `railway domain` or `dig affiliate.aiworkmagic.co`.
 
+### A program on its own domain
+
+A program can have its own domain, such as `affiliate.valentineweek.xyz`, served by the same `app` service and database. Leave `APP_URL` as it is.
+
+1. In the program, open Settings > Branding and save the domain.
+2. Add the same domain to the `app` service in Railway, with target port 3000.
+3. Add the CNAME and `_railway-verify` TXT records Railway shows at that domain's DNS provider. Keep the CNAME on DNS only.
+4. When `https://<domain>/api/health` returns 200, click Verify in the program settings.
+
+Railway gives each domain its own CNAME target, so Verify doesn't compare the CNAME. It requests `https://<domain>/api/domain-proof` and checks that this app answered. Each domain counts toward Railway's custom domain limit for the `app` service.
+
 ## Email (Resend)
 
 `aiworkmagic.co` is verified in Resend, and its records are in Cloudflare. The app sends account email, partner invites, payout notices and reports through `RESEND_API_KEY`. Mail goes out from `EMAIL_FROM`.

@@ -20,6 +20,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: { absolute: p ? `${p.name} partner program` : "Partner program" },
     description: p?.brand.description,
+    // private and invite-only programs are open by link only, so keep them out of search results
+    ...(p && p.visibility !== "public" ? { robots: { index: false } } : {}),
   };
 }
 
